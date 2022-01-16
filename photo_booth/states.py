@@ -3,6 +3,7 @@ import abc
 import cv2
 import math
 
+import numpy
 import structlog
 
 from .join_images import join_images, Vec2
@@ -51,8 +52,10 @@ class TakePhotoState(State):
 
     def __init__(self, frame, photo_number: int = 0) -> None:
 
+        self._ellapsed = 0
         self._frame = frame
         self._photo_number = photo_number
+        self._white_frame = numpy.full_like(frame, 255)
 
         filename = f"photo_{photo_number+1}.png"
         _LOGGER.info(f"saving image {filename}...")
@@ -61,7 +64,13 @@ class TakePhotoState(State):
 
     def tick(self, frame, delta_time_s: float, key: int = None) -> Tuple[Any, "State"]:
         
-        # TODO: fade from white
+        self._ellapsed += delta_time_s
+
+        transition_amount = self._ellapsed / 1.0
+        if transition_amount < 1:
+
+            frame = cv2.addWeighted(frame, 1.0, self._white_frame, 1.0-transition_amount, 0.0)
+            return frame, self
 
         next_photo = self._photo_number + 1
         if next_photo < 4:
