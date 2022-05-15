@@ -6,9 +6,13 @@ import math
 import numpy
 import structlog
 
+from . import input
 from .join_images import join_images, Vec2
 
 _LOGGER = structlog.get_logger(__name__)
+#_FONT = cv2.freetype.createFreeType2()
+#_FONT.loadFontData(fontFileName="/usr/share/fonts/truetype/quicksand/Quicksand-Light.ttf", id=0)
+_FONT = cv2.FONT_HERSHEY_COMPLEX
 
 class State(abc.ABC):
 
@@ -20,15 +24,29 @@ class State(abc.ABC):
 class WelcomeState(State):
 
     def tick(self, frame, delta_time_s: float, key: int = None) -> Tuple[Any, "State"]:
+
+        input.set_blue_button_light(on=True)
+        input.set_red_button_light(on=False)
         
-        cv2.putText(frame, "Mike & Caro's Photo Booth!", (100,100), cv2.FONT_HERSHEY_COMPLEX, 1, (0,0,0))
-        cv2.putText(frame, "Get ready for FOUR photos.", (100,200), cv2.FONT_HERSHEY_COMPLEX, 1, (0,0,0))
-        cv2.putText(frame, "Press the Green button to start.", (100,300), cv2.FONT_HERSHEY_COMPLEX, 1, (0,0,0))
+        cv2.putText(frame, "Mike & Caro's Photo Booth!", (100,100), _FONT, 1, (0,0,0))
+        cv2.putText(frame, "Mike & Caro's Photo Booth!", (101,101), _FONT, 1, (255, 255, 255))
+        cv2.putText(frame, "Get ready for FOUR photos.", (100,200), _FONT, 1, (0,0,0))
+        cv2.putText(frame, "Get ready for FOUR photos.", (101,201), _FONT, 1, (255, 255, 255))
+        cv2.putText(frame, "Press the blue button to start.", (100,300), _FONT, 1, (0,0,0))
+        cv2.putText(frame, "Press the blue button to start.", (101,301), _FONT, 1, (255, 255, 255))
         
-        if key == 32: # space
+        if key == 32 or input.get_blue_button(): # space
+            input.set_blue_button_light(on=False)
             return (frame, CountdownState())
         return (frame, self)
 
+class TestState(State):
+
+    def tick(self, frame, delta_time_s: float, key: int = None) -> Tuple[Any, "State"]:
+        
+        input.set_blue_button_light(on=input.get_blue_button())
+        input.set_red_button_light(on=input.get_red_button())
+        return (frame, self)
 
 class CountdownState(State):
 
@@ -88,15 +106,20 @@ class PrintPhotoState(State):
 
     def tick(self, frame, delta_time_s: float, key: int = None) -> Tuple[Any, "State"]:
 
-        if key == 121: # y
+        input.set_blue_button_light(on=True)
+        input.set_red_button_light(on=True)
+
+        if key == 121 or input.get_blue_button(): # y
             _LOGGER.info("printing image...")
             # TODO: print
             return frame, WelcomeState()
-        elif key == 110: # n
+        elif key == 110 or input.get_red_button(): # n
             _LOGGER.info("saving image secretly... 🤫")
             return frame, WelcomeState()
         else:
             return self._joined_image, self
+
+
 
 
 def resize_to_fit(im, desired: Vec2):

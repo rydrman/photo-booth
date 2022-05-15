@@ -1,0 +1,8 @@
+# !!!!
+# we don't actually use a venv, everything is installed on to the rpi directly
+numpy==1.21.6
+opencv-python==4.4.0.46
+opencv-contrib-python==4.4.0.46
+Pillow==9.1.0
+structlog==21.5.0
+typing-extensions==4.2.0

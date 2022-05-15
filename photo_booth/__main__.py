@@ -1,37 +1,59 @@
 #!/usr/bin/env python3
 from datetime import datetime
+import argparse 
 
 import structlog
 import cv2
 
 from .join_images import Vec2, join_images
 from .config import init_logging, WINDOW_NAME
-from . import states
+from . import states, input
 
 LOOP_INTERVAL_MS = 16
 LOOP_INTERVAL_S = LOOP_INTERVAL_MS / 1000
 _LOGGER = structlog.get_logger(__name__)
 
+def parse_args():
+
+    parser = argparse.ArgumentParser("photo_booth")
+    parser.add_argument("--button-test", action="store_true")
+    parser.add_argument("--no-fullscreen", action="store_true")
+    return parser.parse_args()
+
+
 if __name__ == "__main__":
+    args = parse_args()
     init_logging()
 
-    state = states.WelcomeState()
+    _LOGGER.info("starting up...")
 
+    input.initialize()
+    if args.button_test:
+        state = states.TestState()
+    else:
+        state = states.WelcomeState()
+
+    _LOGGER.info("establishing window...")
     cv2.namedWindow(WINDOW_NAME, cv2.WINDOW_NORMAL)
-    cv2.setWindowProperty(WINDOW_NAME, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+    if not args.no_fullscreen:
+        cv2.setWindowProperty(WINDOW_NAME, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
+    _LOGGER.info("opening video stream...")
     vc = cv2.VideoCapture(0)
     rval, frame = False, []
     if vc.isOpened():
         rval, frame = vc.read()
     
+    _LOGGER.info("starting main loop...")
     key = None
     last_frame = datetime.now().timestamp()
     while rval:
+
         now = datetime.now().timestamp()
         delta_s = now - last_frame
         last_frame = now
 
+        input.tick()
         frame = cv2.flip(frame, 1)
         frame, state = state.tick(frame, delta_s, key)
 
