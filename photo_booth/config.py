@@ -5,8 +5,9 @@ import structlog
 
 WINDOW_NAME = "photo_booth"
 
-def init_logging(): 
-    logging.basicConfig(stream = sys.stderr, format="%(message)s", level=logging.DEBUG)
+
+def init_logging():
+    logging.basicConfig(stream=sys.stderr, format="%(message)s", level=logging.DEBUG)
     logging.getLogger("photo_booth").setLevel(logging.DEBUG)
     structlog.configure(
         processors=[
@@ -15,7 +16,7 @@ def init_logging():
             structlog.stdlib.PositionalArgumentsFormatter(),
             structlog.processors.TimeStamper(fmt="%Y-%m-%d %H:%M.%S"),
             structlog.processors.StackInfoRenderer(),
-            structlog.dev.ConsoleRenderer()
+            structlog.dev.ConsoleRenderer(),
         ],
         context_class=dict,
         logger_factory=structlog.stdlib.LoggerFactory(),

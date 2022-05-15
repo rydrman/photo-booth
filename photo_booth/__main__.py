@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from datetime import datetime
-import argparse 
+import argparse
+import time
 
 import structlog
 import cv2
@@ -12,6 +13,7 @@ from . import states, input
 LOOP_INTERVAL_MS = 16
 LOOP_INTERVAL_S = LOOP_INTERVAL_MS / 1000
 _LOGGER = structlog.get_logger(__name__)
+
 
 def parse_args():
 
@@ -36,14 +38,20 @@ if __name__ == "__main__":
     _LOGGER.info("establishing window...")
     cv2.namedWindow(WINDOW_NAME, cv2.WINDOW_NORMAL)
     if not args.no_fullscreen:
-        cv2.setWindowProperty(WINDOW_NAME, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+        cv2.setWindowProperty(
+            WINDOW_NAME, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN
+        )
+        # let the window resize properly
+        cv2.waitKey(2)
 
     _LOGGER.info("opening video stream...")
     vc = cv2.VideoCapture(0)
     rval, frame = False, []
     if vc.isOpened():
+        vc.set(cv2.CAP_PROP_FRAME_WIDTH, 960)
+        vc.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
         rval, frame = vc.read()
-    
+
     _LOGGER.info("starting main loop...")
     key = None
     last_frame = datetime.now().timestamp()
@@ -61,7 +69,7 @@ if __name__ == "__main__":
 
         cv2.imshow(WINDOW_NAME, frame)
         key = cv2.waitKey(int(max(1, (LOOP_INTERVAL_S - delta_s) * 1000)))
-        if key == 27: # exit on ESC
+        if key == 27:  # exit on ESC
             break
         rval, frame = vc.read()
 

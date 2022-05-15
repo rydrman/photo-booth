@@ -2,12 +2,15 @@ from typing import NamedTuple
 from math import ceil
 import os
 
+import structlog
 from PIL import Image
 import numpy
 
-class Vec2 (NamedTuple):
+
+class Vec2(NamedTuple):
     x: int
     y: int
+
 
 MASK_FILE = os.path.join(os.path.dirname(__file__), "photo_mask.png")
 
@@ -23,13 +26,17 @@ POSITIONS = (
 )
 
 POSITION_RIGHT_X = FULL_SIZE.x - DESIRED_SIZE.x - OUTER_MARGIN
-POSITIONS_RIGHT = (Vec2(POSITION_RIGHT_X, pos.y) for pos in POSITIONS)
+POSITIONS_RIGHT = tuple(Vec2(POSITION_RIGHT_X, pos.y) for pos in POSITIONS)
+
+_LOGGER = structlog.get_logger(__name__)
+
 
 def resize_to_fill(im: Image) -> Image:
     scale_x = float(DESIRED_SIZE.x + 5) / float(im.size[0])
     scale_y = float(DESIRED_SIZE.y + 5) / float(im.size[1])
     scale = max(scale_x, scale_y)
     return im.resize((ceil(scale * im.size[0]), ceil(scale * im.size[1])))
+
 
 def join_images(file1, file2, file3, file4):
     new_image = Image.new("RGBA", FULL_SIZE)
@@ -50,11 +57,10 @@ def join_images(file1, file2, file3, file4):
             int(left.y - overhang.y * 0.5),
         )
         right_pos_centered = Vec2(
-            int(right.x - overhang.x * 0.5),
-            int(right.y - overhang.y * 0.5)
+            int(right.x - overhang.x * 0.5), int(right.y - overhang.y * 0.5)
         )
         new_image.paste(image, left_pos_centered)
         new_image.paste(image, right_pos_centered)
     new_image.alpha_composite(overlay, (0, 0))
-    pixels = numpy.array(new_image.convert('RGB'))
+    pixels = numpy.array(new_image.convert("RGB"))
     return pixels[:, :, ::-1].copy()
