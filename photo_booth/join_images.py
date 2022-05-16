@@ -38,7 +38,7 @@ def resize_to_fill(im: Image) -> Image:
     return im.resize((ceil(scale * im.size[0]), ceil(scale * im.size[1])))
 
 
-def join_images(file1, file2, file3, file4):
+def join_images(file1, file2, file3, file4) -> Image:
     new_image = Image.new("RGBA", FULL_SIZE)
     overlay = Image.open(MASK_FILE)
     images = (
@@ -62,5 +62,4 @@ def join_images(file1, file2, file3, file4):
         new_image.paste(image, left_pos_centered)
         new_image.paste(image, right_pos_centered)
     new_image.alpha_composite(overlay, (0, 0))
-    pixels = numpy.array(new_image.convert("RGB"))
-    return pixels[:, :, ::-1].copy()
+    return new_image

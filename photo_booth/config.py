@@ -7,7 +7,8 @@ WINDOW_NAME = "photo_booth"
 
 
 def init_logging():
-    logging.basicConfig(stream=sys.stderr, format="%(message)s", level=logging.DEBUG)
+    logging.basicConfig(stream=sys.stderr, format="%(message)s", level=logging.CRITICAL)
+    logging.getLogger("__main__").setLevel(logging.DEBUG)
     logging.getLogger("photo_booth").setLevel(logging.DEBUG)
     structlog.configure(
         processors=[

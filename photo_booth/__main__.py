@@ -41,8 +41,6 @@ if __name__ == "__main__":
         cv2.setWindowProperty(
             WINDOW_NAME, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN
         )
-        # let the window resize properly
-        cv2.waitKey(2)
 
     _LOGGER.info("opening video stream...")
     vc = cv2.VideoCapture(0)
