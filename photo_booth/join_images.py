@@ -27,7 +27,7 @@ POSITIONS = (
 
 POSITION_RIGHT_X = FULL_SIZE.x - DESIRED_SIZE.x - OUTER_MARGIN
 POSITIONS_RIGHT = tuple(Vec2(POSITION_RIGHT_X, pos.y) for pos in POSITIONS)
-
+BUF = Image.new("RGBA", FULL_SIZE)
 _LOGGER = structlog.get_logger(__name__)
 
 
@@ -39,7 +39,7 @@ def resize_to_fill(im: Image) -> Image:
 
 
 def join_images(file1, file2, file3, file4) -> Image:
-    new_image = Image.new("RGBA", FULL_SIZE)
+
     overlay = Image.open(MASK_FILE)
     images = (
         resize_to_fill(Image.open(file1)),
@@ -59,7 +59,7 @@ def join_images(file1, file2, file3, file4) -> Image:
         right_pos_centered = Vec2(
             int(right.x - overhang.x * 0.5), int(right.y - overhang.y * 0.5)
         )
-        new_image.paste(image, left_pos_centered)
-        new_image.paste(image, right_pos_centered)
-    new_image.alpha_composite(overlay, (0, 0))
-    return new_image
+        BUF.paste(image, left_pos_centered)
+        BUF.paste(image, right_pos_centered)
+    BUF.alpha_composite(overlay, (0, 0))
+    return BUF

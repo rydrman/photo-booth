@@ -193,6 +193,7 @@ class PrintingMessageState(State):
                 self._submitted = True
 
         elif self._ellapsed > 10:
+            os.remove(self._image_file)
             return (self._image, WelcomeState())
 
         return (self._image, self)
